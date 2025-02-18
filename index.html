@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Teouškovy narozeniny</title>
+    
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database.js"></script>
+
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; }
+        .gift { display: inline-block; margin: 20px; padding: 20px; border: 1px solid #ccc; border-radius: 10px; width: 250px; }
+        .gift img { width: 100%; height: auto; }
+        .gift button { padding: 10px; margin-top: 10px; cursor: pointer; }
+        .reserved { background-color: gray; cursor: not-allowed; }
+    </style>
+</head>
+<body>
+    <h1>Teouškovy narozeniny</h1>
+
+    <div id="gifts-container"></div>
+
+    <script>
+        // Firebase konfigurace
+        const firebaseConfig = {
+            apiKey: "AIzaSyAkLOermaWcOv5d656EDPQETjoOGmERKtw",
+            authDomain: "teo-narozeniny-52be7.firebaseapp.com",
+            databaseURL: "https://teo-narozeniny-52be7-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "teo-narozeniny-52be7",
+            storageBucket: "teo-narozeniny-52be7.firebasestorage.app",
+            messagingSenderId: "795054861137",
+            appId: "1:795054861137:web:9cd782b6f1b6235d3e8170",
+            measurementId: "G-0GRPTFLG4M"
+        };
+
+        // Inicializace Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        // Data o dárcích
+        const gifts = [
+            { id: "gift1", name: "Batůžek", link: "https://www.ondalek.cz/lassig-tiny-backpack-about-friends-detsky-batoh-racoon/", img: "https://i.imgur.com/dMBOStj.png" },
+            { id: "gift2", name: "Knížka", link: "https://www.nejlepsi-darecky.cz/textilni-vzdelavaci-knizka", img: "https://i.imgur.com/PYLRREc.png" },
+            { id: "gift3", name: "Ortopedické puzzle", link: "https://www.muffik.cz/sety-podlozek/medium-2/", img: "https://i.imgur.com/8aRiMWt.png" },
+            { id: "gift4", name: "Učicí věž", link: "https://www.ondalek.cz/cybex-gold-lemo-learning-tower-sada-suede-grey/", img: "https://i.imgur.com/Q3aqIbr.png" },
+            { id: "gift5", name: "Kostky", link: "https://www.elisdesign.cz/drevene-staveci-kostky-5-ks/", img: "https://i.imgur.com/v20Xdlr.png" },
+            { id: "gift6", name: "Zatloukačka", link: "https://www.elisdesign.cz/drevena-zatloukacka/", img: "https://i.imgur.com/kgKWdhf.png" },
+            { id: "gift7", name: "Dle vlastního výběru", link: "https://druhekolo.cz/products/hracky-pro-batolata-1-3-roky", img: "https://media.istockphoto.com/id/1386740242/vector/vector-bubbles-with-question-mark-question-icons-isolated-on-white.jpg?s=612x612&w=0&k=20&c=evjrckVKb_RVRcN5qV1Tz1pkSu3FvHKCGtynu8btxhA=" }
+        ];
+
+        // Funkce pro vytvoření tlačítek a prvků dárků
+        function renderGifts() {
+            const container = document.getElementById("gifts-container");
+            container.innerHTML = "";
+
+            gifts.forEach(gift => {
+                const giftDiv = document.createElement("div");
+                giftDiv.classList.add("gift");
+
+                giftDiv.innerHTML = `
+                    <img src="${gift.img}" alt="${gift.name}">
+                    <p><a href="${gift.link}" target="_blank">${gift.name}</a></p>
+                    <button id="${gift.id}" onclick="reserveGift('${gift.id}')">Rezervovat</button>
+                `;
+
+                container.appendChild(giftDiv);
+            });
+
+            // Zkontrolovat stav rezervací z Firebase
+            db.ref("gifts").on("value", snapshot => {
+                snapshot.forEach(childSnapshot => {
+                    const id = childSnapshot.key;
+                    const button = document.getElementById(id);
+                    if (button) {
+                        button.classList.add("reserved");
+                        button.innerText = "Rezervováno";
+                        button.disabled = true;
+                    }
+                });
+            });
+        }
+
+        // Funkce pro rezervaci dárku
+        function reserveGift(id) {
+            const giftRef = db.ref("gifts/" + id);
+            giftRef.set(true);
+        }
+
+        // Načíst dárky při startu
+        window.onload = renderGifts;
+    </script>
+</body>
+</html>
